@@ -27,22 +27,20 @@ function extractTokenFromParameter(req) {
   }
 }
 
-function extractTokenFromHeader(req) {
+function extractAuthorizationFromHeader(req) {
   let value = req.headers && req.headers.authorization;
   if (value) {
     const scheme = value.substring(0, value.indexOf(' ')).trim();
     const header = value.substring(scheme.length + 1).trim();
     switch (scheme) {
       case 'Bearer':
-        return header;
-      case 'Basic':
-        return Buffer.from(header, 'base64').toString('utf8');
+        return {bearer: true, token: header};
+      case 'Basic': {
+        let auth = Buffer.from(header, 'base64').toString('utf8').split(':');
+        return {basic: true, user: auth[0], pass: auth[1]};
+      }
     }
   }
-}
-
-function verifyUserJwtToken(token, config) {
-  return WeDeploy.auth(config.url).verifyUser(token);
 }
 
 function handleAuthorizationError(res, config) {
@@ -62,16 +60,27 @@ module.exports = function(config) {
     'be provided.');
 
   return function(req, res, next) {
-    let token = extractTokenFromHeader(req) ||
-      extractTokenFromCookie(req) ||
+    let tokenOrEmail = extractTokenFromCookie(req) ||
       extractTokenFromParameter(req);
 
-    if (!token) {
+    let password;
+    if (!tokenOrEmail) {
+      let authorization = extractAuthorizationFromHeader(req);
+      if (authorization && authorization.bearer) {
+        tokenOrEmail = authorization.token;
+      } else if (authorization && authorization.basic) {
+        tokenOrEmail = authorization.user;
+        password = authorization.pass;
+      }
+    }
+
+    if (!tokenOrEmail) {
       handleAuthorizationError(res, config);
       return;
     }
 
-    verifyUserJwtToken(token, config)
+    WeDeploy.auth(config.url)
+      .verifyUser(tokenOrEmail, password)
       .then((user) => {
         res.locals = res.locals || {};
         res.locals.user = user;

@@ -83,6 +83,13 @@ describe('auth()', function() {
         .get('/')
         .expect(401, done);
     });
+
+    it('should respond as authorized if unknown authorization scheme', function(done) {
+      request(server)
+        .get('/')
+        .set('Authorization', 'Unknown token')
+        .expect(401, done);
+    });
   });
 
   describe('redirect', function() {
