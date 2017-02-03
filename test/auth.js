@@ -74,7 +74,7 @@ describe('auth()', function() {
     it('should respond as authorized if token present in headers (Basic)', function(done) {
       request(server)
         .get('/')
-        .set('Authorization', 'Basic dG9rZW4=')
+        .set('Authorization', 'Basic dXNlcjpwYXNz')
         .expect(200, done);
     });
 

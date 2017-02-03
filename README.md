@@ -9,7 +9,7 @@
 Node.js middleware to help users to authenticate using passwords, popular federated identity providers like Google, Facebook, GitHub, and more using [WeDeploy™ Auth](http://wedeploy.com/docs/auth/).
 
 **How it works** - For every request intercepted by the auth middleware a token may be extracted in the following order:
-From `Authorization: Bearer token` or `Authorization: Basic dG9rZW4=` headers, then if not founds it checks for `access_token` cookie or query parameter.
+From `Authorization: Bearer token` or `Authorization: Basic dXNlcjpwYXNz` headers, then if not founds it checks for `access_token` cookie or query parameter.
 
 ## Installation
 
