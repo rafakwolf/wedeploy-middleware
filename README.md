@@ -49,8 +49,9 @@ app.get('/private', function(req, res) {
 app.listen(8080);
 ```
 
+```js
 // curl http://localhost:8080/private -H 'Authorization: Bearer token -v'
-
 // curl http://localhost:8080/private -H 'Authorization: Basic dXNlcjpwYXNz -v'
+```
 
 ### [MIT Licensed](LICENSE)
