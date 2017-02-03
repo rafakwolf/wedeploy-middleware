@@ -19,9 +19,7 @@ var express = require('express');
 var wedeployMiddleware = require('wedeploy-middleware');
 
 var app = express();
-app.use(wedeployMiddleware.auth({
-	url: 'auth.project.wedeploy.io'
-}));
+app.use(wedeployMiddleware.auth({url: 'auth.project.wedeploy.io'}));
 ```
 
 ### wedeployMiddleware.auth(options)
@@ -36,9 +34,7 @@ var express = require('express');
 var wedeployMiddleware = require('wedeploy-middleware');
 
 var app = express();
-app.use(wedeployMiddleware.auth({
-	url: 'auth.project.wedeploy.io'
-}));
+app.use(wedeployMiddleware.auth({url: 'auth.project.wedeploy.io'}));
 
 app.get('/private', function(req, res) {
   // User that has been signed in
