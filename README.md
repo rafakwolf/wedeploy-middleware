@@ -1,6 +1,6 @@
 # wedeploy-middleware
 
-[![Build Status](https://travis-ci.org/wedeploy/badges.svg?branch=master)](https://travis-ci.org/wedeploy/wedeploy-middleware)
+[![Build Status](https://travis-ci.org/wedeploy/wedeploy-middleware.svg?branch=master)](https://travis-ci.org/wedeploy/wedeploy-middleware)
 [![npm version](https://badge.fury.io/js/wedeploy-middleware.svg)](https://badge.fury.io/js/wedeploy-middleware)
 [![Dependency Status](https://david-dm.org/wedeploy/wedeploy-middleware.svg)](https://david-dm.org/wedeploy/wedeploy-middleware)
 [![devDependency Status](https://david-dm.org/wedeploy/wedeploy-middleware/dev-status.svg)](https://david-dm.org/wedeploy/wedeploy-middleware#info=devDependencies)
