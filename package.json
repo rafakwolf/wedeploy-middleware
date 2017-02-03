@@ -1,0 +1,36 @@
+{
+  "name": "wedeploy-middleware",
+  "description": "WeDeploy middleware for Node.js",
+  "version": "0.0.0",
+  "author": "Eduardo Lundgren <eduardo.lundgren@liferay.com>",
+  "license": "MIT",
+  "repository": "wedeploy/wedeploy-middleware",
+  "keywords": [
+    "auth",
+    "express",
+    "wedeploy",
+    "middleware"
+  ],
+  "dependencies": {
+    "wedeploy": "^1.3.0"
+  },
+  "devDependencies": {
+    "eslint": "^3.9.1",
+    "eslint-config-google": "^0.7.1",
+    "istanbul": "0.4.5",
+    "mocha": "2.5.3",
+    "supertest": "1.1.0"
+  },
+  "files": [
+    "LICENSE",
+    "index.js"
+  ],
+  "engines": {
+    "node": ">= 0.8.0"
+  },
+  "scripts": {
+    "lint": "eslint --ext js . --fix",
+    "test": "mocha --reporter spec --bail --check-leaks test/",
+    "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- --reporter dot --check-leaks test/"
+  }
+}

@@ -1,0 +1,51 @@
+# wedeploy-middleware
+
+## Auth
+Node.js middleware to help users to authenticate using passwords, popular federated identity providers like Google, Facebook, GitHub, and more using [WeDeploy™ Auth](http://wedeploy.com/docs/auth/).
+
+**How it works** - For every request intercepted by the auth middleware a token may be extracted in the following order:
+From `Authorization: Bearer token` or `Authorization: Basic dG9rZW4=` headers, then if not founds, a found it checks for `access_token` cookie or query parameter.
+
+## Installation
+
+```sh
+$ npm install wedeploy-middleware
+```
+
+## API
+
+```js
+var express = require('express');
+var wedeployMiddleware = require('wedeploy-middleware');
+
+var app = express();
+app.use(wedeployMiddleware.auth({
+	url: 'auth.project.wedeploy.io'
+}));
+```
+
+### wedeployMiddleware.auth(options)
+
+- `options.url` authorization service url passed to `WeDeploy.auth(url)`.
+- `options.redirect` optional url to redirect on authentication failure, e.g. `/login`.
+
+## Example
+
+```js
+var express = require('express');
+var wedeployMiddleware = require('wedeploy-middleware');
+
+var app = express();
+app.use(wedeployMiddleware.auth({
+	url: 'auth.project.wedeploy.io'
+}));
+
+app.get('/private', function(req, res) {
+  // User that has been signed in
+  console.log('User: ', req.locals.user);
+});
+
+app.listen(8080);
+```
+
+### [MIT Licensed](LICENSE)
