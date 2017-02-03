@@ -43,7 +43,7 @@ app.use(wedeployMiddleware.auth({url: 'auth.project.wedeploy.io'}));
 
 app.get('/private', function(req, res) {
   // User that has been signed in
-  console.log('User: ', req.locals.user);
+  console.log('User: ', res.locals.user);
 });
 
 app.listen(8080);
