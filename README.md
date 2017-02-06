@@ -2,8 +2,6 @@
 
 [![Build Status](https://travis-ci.org/wedeploy/wedeploy-middleware.svg?branch=master)](https://travis-ci.org/wedeploy/wedeploy-middleware)
 [![npm version](https://badge.fury.io/js/wedeploy-middleware.svg)](https://badge.fury.io/js/wedeploy-middleware)
-[![Dependency Status](https://david-dm.org/wedeploy/wedeploy-middleware.svg)](https://david-dm.org/wedeploy/wedeploy-middleware)
-[![devDependency Status](https://david-dm.org/wedeploy/wedeploy-middleware/dev-status.svg)](https://david-dm.org/wedeploy/wedeploy-middleware#info=devDependencies)
 
 ## Auth
 Node.js middleware to help users to authenticate using passwords, popular federated identity providers like Google, Facebook, GitHub, and more using [WeDeploy™ Auth](http://wedeploy.com/docs/auth/).
