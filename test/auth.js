@@ -41,54 +41,78 @@ describe('auth()', function() {
       request(server)
         .get('/')
         .set('Cookie', ['access_token=token'])
-        .expect(200, done);
+        .end((err, res) => {
+          assert.strictEqual(200, res.statusCode);
+          done();
+        });
     });
 
     it('should respond as authorized if token present in cookies with multiple values', function(done) {
       request(server)
         .get('/')
         .set('Cookie', ['access_token=token', 'access_token=wrong', 'foo=bar'])
-        .expect(200, done);
+        .end((err, res) => {
+          assert.strictEqual(200, res.statusCode);
+          done();
+        });
     });
 
     it('should respond as unauthorized if token not present in cookies', function(done) {
       request(server)
         .get('/')
         .set('Cookie', ['foo=bar'])
-        .expect(401, done);
+        .end((err, res) => {
+          assert.strictEqual(401, res.statusCode);
+          done();
+        });
     });
 
     it('should respond as authorized if token present in querystring', function(done) {
       request(server)
         .get('/?access_token=token')
-        .expect(200, done);
+        .end((err, res) => {
+          assert.strictEqual(200, res.statusCode);
+          done();
+        });
     });
 
     it('should respond as authorized if token present in headers (Bearer)', function(done) {
       request(server)
         .get('/')
         .set('Authorization', 'Bearer token')
-        .expect(200, done);
+        .end((err, res) => {
+          assert.strictEqual(200, res.statusCode);
+          done();
+        });
     });
 
     it('should respond as authorized if token present in headers (Basic)', function(done) {
       request(server)
         .get('/')
         .set('Authorization', 'Basic dXNlcjpwYXNz')
-        .expect(200, done);
+        .end((err, res) => {
+          assert.strictEqual(200, res.statusCode);
+          done();
+        });
     });
 
     it('should respond as unauthorized if token not present in headers, cookies or querystring', function(done) {
       request(server)
         .get('/')
-        .expect(401, done);
+        .end((err, res) => {
+          assert.strictEqual(401, res.statusCode);
+          done();
+        });
     });
 
     it('should respond as authorized if unknown authorization scheme', function(done) {
       request(server)
         .get('/')
         .set('Authorization', 'Unknown token')
-        .expect(401, done);
+        .end((err, res) => {
+          assert.strictEqual(401, res.statusCode);
+          done();
+        });
     });
   });
 
