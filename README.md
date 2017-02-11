@@ -34,6 +34,8 @@ app.use(wedeployMiddleware.auth({url: 'auth.project.wedeploy.io'}));
 
 ## Examples
 
+### Basic usage
+
 ```js
 var express = require('express');
 var wedeployMiddleware = require('wedeploy-middleware');
@@ -49,7 +51,7 @@ app.get('/private', function(req, res) {
 app.listen(8080);
 ```
 
-Authenticating with scopes
+### Authenticating with scopes
 
 ```js
 var express = require('express');
