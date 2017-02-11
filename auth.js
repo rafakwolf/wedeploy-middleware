@@ -7,6 +7,12 @@ function assertDefAndNotNull(value, message) {
   }
 }
 
+function assertUserSupportedScopes(user, scopes) {
+  if (!user.hasSupportedScopes(scopes)) {
+    throw new Error('User does not have scopes: ' + scopes);
+  }
+}
+
 function extractTokenFromCookie(req) {
   let cookie = req.headers.cookie;
   if (cookie) {
@@ -84,6 +90,9 @@ module.exports = function(config) {
       .then((user) => {
         res.locals = res.locals || {};
         res.locals.user = user;
+        if (config.scopes) {
+          assertUserSupportedScopes(user, config.scopes);
+        }
         next();
       })
       .catch((reason) => handleAuthorizationError(res, config));

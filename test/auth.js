@@ -33,8 +33,8 @@ describe('auth()', function() {
       server = createServer().listen(8888);
     });
 
-    after(function() {
-      server.close();
+    after(function(done) {
+      server.close(() => done());
     });
 
     it('should respond as authorized if token present in cookies', function(done) {
@@ -97,9 +97,9 @@ describe('auth()', function() {
       let server = createServer('/login').listen(8888);
       request(server)
         .get('/')
-        .expect(302, () => {
-          server.close();
-          done();
+        .end((err, res) => {
+          assert.strictEqual(302, res.statusCode);
+          server.close(() => done());
         });
     });
 
@@ -107,16 +107,84 @@ describe('auth()', function() {
       let server = createServer('/login', true).listen(8888);
       request(server)
         .get('/')
-        .set('Authorization', 'Bearer token')
-        .expect(302, () => {
-          server.close();
-          done();
+        .set('Authorization', 'Bearer skipRedirectBecauseTokenWasMissing')
+        .end((err, res) => {
+          assert.strictEqual(302, res.statusCode);
+          server.close(() => done());
+        });
+    });
+  });
+
+  describe('scopes', function() {
+    it('should redirect if scope is invalid', function(done) {
+      let server = createServer('/login', false, ['invalidScope']).listen(8888);
+      request(server)
+        .get('/')
+        .set('Authorization', 'Bearer skipRedirectBecauseTokenWasMissing')
+        .end((err, res) => {
+          assert.strictEqual(302, res.statusCode);
+          server.close(() => done());
+        });
+    });
+
+    it('should not redirect if scope is valid', function(done) {
+      let server = createServer('/login', false, ['validScope']).listen(8888);
+      request(server)
+        .get('/')
+        .set('Authorization', 'Bearer skipRedirectBecauseTokenWasMissing')
+        .end((err, res) => {
+          assert.strictEqual(200, res.statusCode);
+          server.close(() => done());
+        });
+    });
+
+    it('should not redirect if scope is not specified', function(done) {
+      let server = createServer('/login').listen(8888);
+      request(server)
+        .get('/')
+        .set('Authorization', 'Bearer skipRedirectBecauseTokenWasMissing')
+        .end((err, res) => {
+          assert.strictEqual(200, res.statusCode);
+          server.close(() => done());
+        });
+    });
+
+    it('should not authorize if scope is invalid', function(done) {
+      let server = createServer(null, false, ['invalidScope']).listen(8888);
+      request(server)
+        .get('/')
+        .set('Authorization', 'Bearer skipRedirectBecauseTokenWasMissing')
+        .end((err, res) => {
+          assert.strictEqual(401, res.statusCode);
+          server.close(() => done());
+        });
+    });
+
+    it('should authorize if scope is valid', function(done) {
+      let server = createServer(null, false, ['validScope']).listen(8888);
+      request(server)
+        .get('/')
+        .set('Authorization', 'Bearer skipRedirectBecauseTokenWasMissing')
+        .end((err, res) => {
+          assert.strictEqual(200, res.statusCode);
+          server.close(() => done());
+        });
+    });
+
+    it('should authorize if scope is not specified', function(done) {
+      let server = createServer().listen(8888);
+      request(server)
+        .get('/')
+        .set('Authorization', 'Bearer skipRedirectBecauseTokenWasMissing')
+        .end((err, res) => {
+          assert.strictEqual(200, res.statusCode);
+          server.close(() => done());
         });
     });
   });
 });
 
-function createServer(errorRedirectUrl = null, respondUserVerificationAsForbidden = false) {
+function createServer(errorRedirectUrl = null, respondUserVerificationAsForbidden = false, scopes = null) {
   return http.createServer(function(req, res) {
     switch (req.url) {
       case '/user':
@@ -126,11 +194,13 @@ function createServer(errorRedirectUrl = null, respondUserVerificationAsForbidde
         } else {
           res.statusCode = 200;
           res.setHeader('Content-Type', 'application/json');
-          res.end(JSON.stringify({token: 'token'}));
+          res.end(JSON.stringify({token: 'token', supportedScopes: ['validScope']}));
         }
         break;
-      default:
-        wedeployMiddleware.auth({url: 'http://localhost:8888', redirect: errorRedirectUrl})(req, res, () => res.end());
+      default: {
+        let authMiddleware = wedeployMiddleware.auth({url: 'http://localhost:8888', redirect: errorRedirectUrl, scopes: scopes});
+        authMiddleware(req, res, (err) => res.end());
+      }
     }
   });
 }
