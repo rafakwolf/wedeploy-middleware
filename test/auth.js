@@ -211,18 +211,6 @@ describe('scopes', function() {
   });
 });
 
-describe('load', function(done) {
-  it('should load res.locals.auth object', () => {
-    let server = createServer().listen(8888);
-    request(server)
-      .get('/')
-      .end((err, res) => {
-        assert.ok(!!res.locals.auth);
-        server.close(() => done());
-      });
-  });
-});
-
 function createServer(errorRedirectUrl = null, respondUserVerificationAsForbidden = false, scopes = null) {
   return http.createServer(function(req, res) {
     switch (req.url) {

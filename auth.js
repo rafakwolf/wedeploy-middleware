@@ -89,6 +89,7 @@ module.exports = function(config) {
 
     auth.verifyUser(tokenOrEmail, password)
       .then((user) => {
+        auth.currentUser = user;
         res.locals = res.locals || {};
         res.locals.auth = auth;
         if (config.scopes) {
