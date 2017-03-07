@@ -85,11 +85,12 @@ module.exports = function(config) {
       return;
     }
 
-    WeDeploy.auth(config.url)
-      .verifyUser(tokenOrEmail, password)
+    let auth = WeDeploy.auth(config.url);
+
+    auth.verifyUser(tokenOrEmail, password)
       .then((user) => {
         res.locals = res.locals || {};
-        res.locals.user = user;
+        res.locals.auth = auth;
         if (config.scopes) {
           assertUserSupportedScopes(user, config.scopes);
         }

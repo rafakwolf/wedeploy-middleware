@@ -49,7 +49,7 @@ app.use(wedeployMiddleware.auth({url: 'auth.project.wedeploy.io'}));
 
 app.get('/private', function(req, res) {
   // User that has been signed in
-  console.log('User: ', res.locals.user);
+  console.log('User: ', res.locals.auth.currentUser);
 });
 
 app.listen(8080);
@@ -70,7 +70,7 @@ var authMiddleware = wedeployMiddleware.auth({
 
 app.get('/admin', authMiddleware, function(req, res) {
   // User that has been signed in
-  console.log('User: ', res.locals.user);
+  console.log('User: ', res.locals.auth.currentUser);
 });
 
 app.listen(8080);
