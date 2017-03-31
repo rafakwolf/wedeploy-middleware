@@ -8,10 +8,12 @@ Node.js middleware to help users to authenticate using passwords, popular federa
 
 **How it works** - For every request intercepted by the auth middleware a token or credential may be extracted in the following order:
 
-1. Cookie `access_token`
-2. Query parameter `access_token`
-3. Header `Authorization: Bearer token`
-4. Header `Authorization: Basic dXNlcjpwYXNz`
+| Source                        | Key                                                                   |
+| ----------------------------- | --------------------------------------------------------------------- |
+| Basic Authentication          | `curl -u "username:password" "https://api.wedeploy.io/"`              |
+| OAuth2 Token (header)         | `curl -H "Authorization: Bearer TOKEN" "https://api.wedeploy.io/"`    |
+| OAuth2 Token (query string)   | `curl "https://api.wedeploy.io/?access_token=TOKEN"`                  |
+| OAuth2 Token (cookie)         | `curl -H "Cookie:access_token=TOKEN" "https://api.wedeploy.io/"`      |
 
 ## Installation
 
