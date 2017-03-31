@@ -52,13 +52,26 @@ function extractAuthorizationFromHeader(req) {
 function handleAuthorizationError(res, config) {
   if (config.redirect) {
     res.writeHead(302, {'Location': config.redirect});
+    res.end();
   } else {
-    res.statusCode = 401;
+    res.writeHead(401, {'Content-Type': 'application/json'});
+    res.end(JSON.stringify(config.authorizationError));
   }
-  res.end();
+}
+
+/**
+ * Prepare configuration values.
+ * @param  {[type]} config [description]
+ */
+function prepareConfig(config) {
+  if (!('authorizationError' in config)) {
+    config.authorizationError = {status: 401, message: 'Unauthorized'};
+  }
 }
 
 module.exports = function(config) {
+  prepareConfig(config);
+
   assertDefAndNotNull(config, 'WeDeploy configuration must be provided, ' +
     'e.g. { url: \'auth.project.wedeploy.io\' }.');
 

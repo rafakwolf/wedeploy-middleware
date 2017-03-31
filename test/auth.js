@@ -211,7 +211,32 @@ describe('scopes', function() {
   });
 });
 
-function createServer(errorRedirectUrl = null, respondUserVerificationAsForbidden = false, scopes = null) {
+describe('config.authorizationError', () => {
+  it('should output default authorization error', function(done) {
+    let server = createServer().listen(8888);
+    request(server)
+      .get('/')
+      .set('Authorization', 'Unknown token')
+      .end((err, res) => {
+        assert.deepEqual({status: 401, message: 'Unauthorized'}, res.body);
+        server.close(() => done());
+      });
+  });
+
+  it('should output custom authorization error', function(done) {
+    let server = createServer(null, false, null, 'doNotEnter').listen(8888);
+    request(server)
+      .get('/')
+      .set('Authorization', 'Unknown token')
+      .end((err, res) => {
+        assert.deepEqual('doNotEnter', res.body);
+        server.close(() => done());
+      });
+  });
+});
+
+
+function createServer(errorRedirectUrl = null, respondUserVerificationAsForbidden = false, scopes = null, authorizationError) {
   return http.createServer(function(req, res) {
     switch (req.url) {
       case '/user':
@@ -225,7 +250,11 @@ function createServer(errorRedirectUrl = null, respondUserVerificationAsForbidde
         }
         break;
       default: {
-        let authMiddleware = wedeployMiddleware.auth({url: 'http://localhost:8888', redirect: errorRedirectUrl, scopes: scopes});
+        let config = {url: 'http://localhost:8888', redirect: errorRedirectUrl, scopes: scopes};
+        if (authorizationError) {
+          config.authorizationError = authorizationError;
+        }
+        let authMiddleware = wedeployMiddleware.auth(config);
         authMiddleware(req, res, (err) => res.end());
       }
     }

@@ -34,7 +34,7 @@ app.use(wedeployMiddleware.auth({url: 'auth.project.wedeploy.io'}));
 - `options.url` authorization service url passed to `WeDeploy.auth(url)`.
 - `options.redirect` optional url to redirect on authentication failure, e.g. `/login`.
 - `options.scopes` optional authorization scopes.
-
+- `options.authorizationError` optional authorization error response body, e.g. `{status: 401, message: 'Unauthorized'}`.
 
 ## Examples
 
