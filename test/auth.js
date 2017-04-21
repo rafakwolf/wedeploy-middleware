@@ -98,6 +98,17 @@ describe('headers', function() {
       });
   });
 
+  it('should respond as authorized if token present in headers (Basic) and user has uppercase letters', function(done) {
+    let server = createServer().listen(8888);
+    request(server)
+      .get('/')
+      .set('Authorization', 'Basic VXNlcjpwYXNz')
+      .end((err, res) => {
+        assert.strictEqual(200, res.statusCode);
+        server.close(() => done());
+      });
+  });
+
   it('should respond as authorized if unknown authorization scheme', function(done) {
     let server = createServer().listen(8888);
     request(server)
