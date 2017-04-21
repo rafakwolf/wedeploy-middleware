@@ -1,4 +1,3 @@
-
 const assert = require('assert');
 const http = require('http');
 const request = require('supertest');
@@ -36,7 +35,9 @@ describe('wedeploy-middleware', () => {
   });
 
   describe('cookies', function() {
-    it('should respond as authorized if token present in cookies', function(done) {
+    it('should respond as authorized if token present in cookies', function(
+      done
+    ) {
       let server = createServer().listen(8888);
       request(server)
         .get('/')
@@ -47,7 +48,9 @@ describe('wedeploy-middleware', () => {
         });
     });
 
-    it('should respond as authorized if token present in cookies with multiple values', function(done) {
+    it('should respond as authorized if token present in cookies with multiple values', function(
+      done
+    ) {
       let server = createServer().listen(8888);
       request(server)
         .get('/')
@@ -58,32 +61,33 @@ describe('wedeploy-middleware', () => {
         });
     });
 
-    it('should respond as unauthorized if token not present in cookies', function(done) {
+    it('should respond as unauthorized if token not present in cookies', function(
+      done
+    ) {
       let server = createServer().listen(8888);
-      request(server)
-        .get('/')
-        .set('Cookie', ['foo=bar'])
-        .end((err, res) => {
-          assert.strictEqual(401, res.statusCode);
-          server.close(() => done());
-        });
+      request(server).get('/').set('Cookie', ['foo=bar']).end((err, res) => {
+        assert.strictEqual(401, res.statusCode);
+        server.close(() => done());
+      });
     });
   });
 
   describe('querystring', function() {
-    it('should respond as authorized if token present in querystring', function(done) {
+    it('should respond as authorized if token present in querystring', function(
+      done
+    ) {
       let server = createServer().listen(8888);
-      request(server)
-        .get('/?access_token=token')
-        .end((err, res) => {
-          assert.strictEqual(200, res.statusCode);
-          server.close(() => done());
-        });
+      request(server).get('/?access_token=token').end((err, res) => {
+        assert.strictEqual(200, res.statusCode);
+        server.close(() => done());
+      });
     });
   });
 
   describe('headers', function() {
-    it('should respond as authorized if token present in headers (Bearer)', function(done) {
+    it('should respond as authorized if token present in headers (Bearer)', function(
+      done
+    ) {
       let server = createServer().listen(8888);
       request(server)
         .get('/')
@@ -94,11 +98,16 @@ describe('wedeploy-middleware', () => {
         });
     });
 
-    it('should respond as authorized if credentials are present in headers (Basic)', function(done) {
+    it('should respond as authorized if credentials are present in headers (Basic)', function(
+      done
+    ) {
       let server = createServer().listen(8888);
       request(server)
         .get('/')
-        .set('Authorization', `Basic ${Buffer.from('user:pass').toString('base64')}`)
+        .set(
+          'Authorization',
+          `Basic ${Buffer.from('user:pass').toString('base64')}`
+        )
         .end((err, res) => {
           assert.strictEqual(200, res.statusCode);
           assert.strictEqual('user', currentUser.email);
@@ -106,29 +115,41 @@ describe('wedeploy-middleware', () => {
         });
     });
 
-    it('should convert to lowercase value extracted from authorization header if it\'s an email (Basic)', function(done) {
+    it('should convert to lowercase value extracted from authorization header if it\'s an email (Basic)', function(
+      done
+    ) {
       let server = createServer().listen(8888);
       request(server)
         .get('/')
-        .set('Authorization', `Basic ${Buffer.from('USER@domain.com:pass').toString('base64')}`)
+        .set(
+          'Authorization',
+          `Basic ${Buffer.from('USER@domain.com:pass').toString('base64')}`
+        )
         .end((err, res) => {
           assert.strictEqual('user@domain.com', currentUser.email);
           server.close(() => done());
         });
     });
 
-    it('should not convert to lowercase value extracted from authorization header if it\'s a token (Basic)', function(done) {
+    it('should not convert to lowercase value extracted from authorization header if it\'s a token (Basic)', function(
+      done
+    ) {
       let server = createServer().listen(8888);
       request(server)
         .get('/')
-        .set('Authorization', `Basic ${Buffer.from('TOKEN:').toString('base64')}`)
+        .set(
+          'Authorization',
+          `Basic ${Buffer.from('TOKEN:').toString('base64')}`
+        )
         .end((err, res) => {
           assert.strictEqual('TOKEN', currentUser.token);
           server.close(() => done());
         });
     });
 
-    it('should respond as authorized if unknown authorization scheme', function(done) {
+    it('should respond as authorized if unknown authorization scheme', function(
+      done
+    ) {
       let server = createServer().listen(8888);
       request(server)
         .get('/')
@@ -152,24 +173,24 @@ describe('wedeploy-middleware', () => {
   });
 
   describe('token presence', function() {
-    it('should respond as unauthorized if token not present in headers, cookies or querystring', function(done) {
+    it('should respond as unauthorized if token not present in headers, cookies or querystring', function(
+      done
+    ) {
       let server = createServer().listen(8888);
-      request(server)
-        .get('/')
-        .end((err, res) => {
-          assert.strictEqual(401, res.statusCode);
-          server.close(() => done());
-        });
+      request(server).get('/').end((err, res) => {
+        assert.strictEqual(401, res.statusCode);
+        server.close(() => done());
+      });
     });
 
-    it('should redirect if token not present in headers, cookies or querystring', function(done) {
+    it('should redirect if token not present in headers, cookies or querystring', function(
+      done
+    ) {
       let server = createServer('/login').listen(8888);
-      request(server)
-        .get('/')
-        .end((err, res) => {
-          assert.strictEqual(302, res.statusCode);
-          server.close(() => done());
-        });
+      request(server).get('/').end((err, res) => {
+        assert.strictEqual(302, res.statusCode);
+        server.close(() => done());
+      });
     });
   });
 
@@ -266,7 +287,12 @@ describe('wedeploy-middleware', () => {
   });
 });
 
-function createServer(errorRedirectUrl = null, respondUserVerificationAsForbidden = false, scopes = null, authorizationError) {
+function createServer(
+  errorRedirectUrl = null,
+  respondUserVerificationAsForbidden = false,
+  scopes = null,
+  authorizationError
+) {
   return http.createServer(function(req, res) {
     switch (req.url) {
       case '/user':
@@ -276,16 +302,22 @@ function createServer(errorRedirectUrl = null, respondUserVerificationAsForbidde
         } else {
           res.statusCode = 200;
           res.setHeader('Content-Type', 'application/json');
-          res.end(JSON.stringify({token: 'token', supportedScopes: ['validScope']}));
+          res.end(
+            JSON.stringify({token: 'token', supportedScopes: ['validScope']})
+          );
         }
         break;
       default: {
-        let config = {url: 'http://localhost:8888', redirect: errorRedirectUrl, scopes: scopes};
+        let config = {
+          url: 'http://localhost:8888',
+          redirect: errorRedirectUrl,
+          scopes: scopes,
+        };
         if (authorizationError) {
           config.authorizationError = authorizationError;
         }
         let authMiddleware = wedeployMiddleware.auth(config);
-        authMiddleware(req, res, (err) => {
+        authMiddleware(req, res, err => {
           currentUser = res.locals.auth.currentUser;
           res.end();
         });

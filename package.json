@@ -15,10 +15,11 @@
     "wedeploy": "^1.9.0"
   },
   "devDependencies": {
-    "eslint": "^3.9.1",
-    "eslint-config-google": "^0.7.1",
+    "eslint": "^3.19.0",
+    "eslint-config-liferay": "^1.0.1",
     "istanbul": "0.4.5",
     "mocha": "2.5.3",
+    "prettier": "^1.2.2",
     "supertest": "1.1.0"
   },
   "files": [
@@ -30,6 +31,7 @@
     "node": ">= 0.8.0"
   },
   "scripts": {
+    "format": "prettier --single-quote --no-bracket-spacing --trailing-comma es5 --write \"{src/**/*.js,test/**/*.js,*.js}\" && eslint --fix \"{src/**/*.js,test/**/*.js,*.js}\"",
     "lint": "eslint --ext js . --fix",
     "test": "mocha --reporter spec --bail --check-leaks test/",
     "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- --reporter dot --check-leaks test/"

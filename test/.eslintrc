@@ -1,8 +1,10 @@
 {
+  "extends": ["liferay"],
   "env": {
-    "mocha": true
+    "mocha": true,
   },
   "rules": {
-      "max-len": 0
+    "max-len": 0,
+    "require-jsdoc": 0
   }
 }
