@@ -4,6 +4,13 @@ const http = require('http');
 const request = require('supertest');
 const wedeployMiddleware = require('../');
 
+let currentUser;
+
+describe('wedeploy-middleware', () => {
+beforeEach(() => {
+  currentUser = null;
+});
+
 describe('.auth()', function() {
   it('should export auth function', function() {
     assert(typeof wedeployMiddleware.auth, 'function');
@@ -87,24 +94,36 @@ describe('headers', function() {
       });
   });
 
-  it('should respond as authorized if token present in headers (Basic)', function(done) {
+  it('should respond as authorized if credentials are present in headers (Basic)', function(done) {
     let server = createServer().listen(8888);
     request(server)
       .get('/')
-      .set('Authorization', 'Basic dXNlcjpwYXNz')
+      .set('Authorization', `Basic ${Buffer.from('user:pass').toString('base64')}`)
       .end((err, res) => {
         assert.strictEqual(200, res.statusCode);
+        assert.strictEqual('user', currentUser.email);
         server.close(() => done());
       });
   });
 
-  it('should respond as authorized if token present in headers (Basic) and user has uppercase letters', function(done) {
+  it('should convert to lowercase value extracted from authorization header if it\'s an email (Basic)', function(done) {
     let server = createServer().listen(8888);
     request(server)
       .get('/')
-      .set('Authorization', 'Basic VXNlcjpwYXNz')
+      .set('Authorization', `Basic ${Buffer.from('USER@domain.com:pass').toString('base64')}`)
       .end((err, res) => {
-        assert.strictEqual(200, res.statusCode);
+        assert.strictEqual('user@domain.com', currentUser.email);
+        server.close(() => done());
+      });
+  });
+
+  it('should not convert to lowercase value extracted from authorization header if it\'s a token (Basic)', function(done) {
+    let server = createServer().listen(8888);
+    request(server)
+      .get('/')
+      .set('Authorization', `Basic ${Buffer.from('TOKEN:').toString('base64')}`)
+      .end((err, res) => {
+        assert.strictEqual('TOKEN', currentUser.token);
         server.close(() => done());
       });
   });
@@ -245,7 +264,7 @@ describe('config.authorizationError', () => {
       });
   });
 });
-
+});
 
 function createServer(errorRedirectUrl = null, respondUserVerificationAsForbidden = false, scopes = null, authorizationError) {
   return http.createServer(function(req, res) {
@@ -266,7 +285,10 @@ function createServer(errorRedirectUrl = null, respondUserVerificationAsForbidde
           config.authorizationError = authorizationError;
         }
         let authMiddleware = wedeployMiddleware.auth(config);
-        authMiddleware(req, res, (err) => res.end());
+        authMiddleware(req, res, (err) => {
+          currentUser = res.locals.auth.currentUser;
+          res.end();
+        });
       }
     }
   });

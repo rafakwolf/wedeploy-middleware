@@ -42,9 +42,18 @@ function extractAuthorizationFromHeader(req) {
       case 'Bearer':
         return {bearer: true, token: header};
       case 'Basic': {
-        let [user, pass] = Buffer.from(header, 'base64').toString('utf8').split(':');
-        if(user) {
-          user = user.toLowerCase();
+        let [user, pass] =
+          Buffer.from(header, 'base64').toString('utf8').split(':');
+        if (user) {
+          // Changes user extracted from basic header to lowercase, do not
+          // convert to lowercase if extracted value is a JWT token. WeDeploy
+          // api supports passing JWT token as user inside basic header,
+          // e.g."Authorization: Basic token:". Checking the presence of "@"
+          // char on the extracted value is enough to distinguish email or
+          // token. JWT tokens are base64 and will never contains "@" char.
+          if (user.indexOf('@') >= 0) {
+            user = user.toLowerCase();
+          }
         }
         return {basic: true, user: user, pass: pass};
       }
@@ -102,7 +111,6 @@ module.exports = function(config) {
     }
 
     let auth = WeDeploy.auth(config.url);
-
     auth.verifyUser(tokenOrEmail, password)
       .then((user) => {
         auth.currentUser = user;
