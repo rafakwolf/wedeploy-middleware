@@ -29,11 +29,11 @@ function extractTokenFromCookie(req) {
   let cookie = req.headers.cookie;
   if (cookie) {
     let value = cookie
-      .split(', ')
+      .split('; ')
       .find(p => p.trim().startsWith('access_token='));
 
     if (value) {
-      return value.substring(13);
+      return decodeURIComponent(value.substring(13));
     }
   }
 }
