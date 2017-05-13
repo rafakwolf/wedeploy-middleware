@@ -104,6 +104,9 @@ function prepareConfig(config) {
   if (!('authorizationError' in config)) {
     config.authorizationError = {status: 401, message: 'Unauthorized'};
   }
+  if (!('unauthorizedOnly' in config)) {
+    config.unauthorizedOnly = false;
+  }
 }
 
 module.exports = function(config) {
@@ -133,6 +136,14 @@ module.exports = function(config) {
         tokenOrEmail = authorization.user;
         password = authorization.pass;
       }
+    }
+
+    if (config.unauthorizedOnly) {
+      if (tokenOrEmail) {
+        handleAuthorizationError(res, config);
+      }
+      next();
+      return;
     }
 
     if (!tokenOrEmail) {

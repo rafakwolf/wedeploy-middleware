@@ -277,7 +277,7 @@ describe('wedeploy-middleware', () => {
     });
   });
 
-  describe('config.authorizationError', () => {
+  describe('config.authorizationError', function() {
     it('should output default authorization error', function(done) {
       let server = createServer().listen(8888);
       request(server)
@@ -300,6 +300,29 @@ describe('wedeploy-middleware', () => {
         });
     });
   });
+
+  describe('config.unauthorizedOnly', function() {
+    it('should redirect if request has authenticated user', function(done) {
+      let server = createServer('/authorized-route', false).listen(8888);
+      request(server)
+        .get('/guest')
+        .set('Authorization', 'Bearer authorizedToken')
+        .end((err, res) => {
+          assert.strictEqual(302, res.statusCode);
+          assert.strictEqual('/authorized-route', res.headers.location);
+          server.close(() => done());
+        });
+    });
+    it('should not redirect if request does not have authenticated user', function(
+      done
+    ) {
+      let server = createServer('/authorized-route', false).listen(8888);
+      request(server).get('/guest').end((err, res) => {
+        assert.strictEqual(200, res.statusCode);
+        server.close(() => done());
+      });
+    });
+  });
 });
 
 function createServer(
@@ -310,7 +333,7 @@ function createServer(
 ) {
   return http.createServer(function(req, res) {
     switch (req.url) {
-      case '/user':
+      case '/user': {
         if (respondUserVerificationAsForbidden) {
           res.statusCode = 403;
           res.end();
@@ -322,6 +345,19 @@ function createServer(
           );
         }
         break;
+      }
+      case '/guest': {
+        let config = {
+          url: 'http://localhost:8888',
+          redirect: errorRedirectUrl,
+          unauthorizedOnly: true,
+        };
+        let authMiddleware = wedeployMiddleware.auth(config);
+        authMiddleware(req, res, () => {
+          res.end();
+        });
+        break;
+      }
       default: {
         let config = {
           url: 'http://localhost:8888',
