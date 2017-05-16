@@ -85,6 +85,19 @@ describe('wedeploy-middleware', () => {
         server.close(() => done());
       });
     });
+
+    it('should respond as authorized if token is invalid but route requires unauthorized only', function(
+      done
+    ) {
+      let server = createServer(null, true).listen(8888);
+      request(server)
+        .get('/guest')
+        .set('Cookie', 'access_token=invalidtoken')
+        .end((err, res) => {
+          assert.strictEqual(200, res.statusCode);
+          server.close(() => done());
+        });
+    });
   });
 
   describe('querystring', function() {
