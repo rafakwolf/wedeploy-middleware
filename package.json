@@ -12,7 +12,7 @@
     "middleware"
   ],
   "dependencies": {
-    "wedeploy": "^1.9.0"
+    "wedeploy": "^2.0.3"
   },
   "devDependencies": {
     "eslint": "^3.19.0",
