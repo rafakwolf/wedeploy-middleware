@@ -84,13 +84,18 @@ function extractAuthorizationFromHeader(req) {
 
 /**
  * @param {Object} res
+ * @param {Object} next
  * @param {Object} config
  */
-function handleAuthorizationError(res, config) {
+function handleAuthorizationError(res, next, config) {
   if (config.redirect) {
     res.writeHead(302, {Location: config.redirect});
     res.end();
   } else {
+    if (config.authorizationError === false) {
+      next();
+      return;
+    }
     res.writeHead(401, {'Content-Type': 'application/json'});
     res.end(JSON.stringify(config.authorizationError));
   }
@@ -148,7 +153,7 @@ module.exports = function(config) {
     }
 
     if (!tokenOrEmail) {
-      handleAuthorizationError(res, config);
+      handleAuthorizationError(res, next, config);
       return;
     }
 
@@ -160,7 +165,7 @@ module.exports = function(config) {
         // and token or email is valid, it should redirect
         // to route specified on config or throw an error.
         if (config.unauthorizedOnly) {
-          handleAuthorizationError(res, config);
+          handleAuthorizationError(res, next, config);
           next();
           return;
         }
@@ -182,7 +187,7 @@ module.exports = function(config) {
           next();
           return;
         }
-        handleAuthorizationError(res, config);
+        handleAuthorizationError(res, next, config);
       });
   };
 };

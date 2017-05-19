@@ -312,6 +312,19 @@ describe('wedeploy-middleware', () => {
           server.close(() => done());
         });
     });
+
+    it('should proceed to the next middleware and not throw an error if authorizationError is false', function(
+      done
+    ) {
+      let server = createServer(null, false, null, false).listen(8888);
+      request(server)
+        .get('/')
+        .set('Authorization', 'Bearer token')
+        .end((err, res) => {
+          assert.strictEqual(200, res.statusCode);
+          server.close(() => done());
+        });
+    });
   });
 
   describe('config.unauthorizedOnly', function() {
@@ -377,7 +390,7 @@ function createServer(
           redirect: errorRedirectUrl,
           scopes: scopes,
         };
-        if (authorizationError) {
+        if (authorizationError !== undefined) {
           config.authorizationError = authorizationError;
         }
         let authMiddleware = wedeployMiddleware.auth(config);
