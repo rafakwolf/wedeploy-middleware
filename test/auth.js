@@ -349,13 +349,52 @@ describe('wedeploy-middleware', () => {
       });
     });
   });
+
+  describe('config.verifyUser', function() {
+    it('overrides the default auth.verifyUser', function(done) {
+      const verifyUser = (req, res) => 'anotherUser';
+      let server = createServer(
+        null,
+        false,
+        null,
+        undefined,
+        verifyUser
+      ).listen(8888);
+      request(server).get('/verify').end((err, res) => {
+        assert.strictEqual(currentUser, 'anotherUser');
+        assert.strictEqual(200, res.statusCode);
+        server.close(() => done());
+      });
+    });
+
+    it('can be an async method', function(done) {
+      const verifyUser = (req, res) => {
+        return new Promise(resolve => {
+          setTimeout(() => resolve('asyncUser'), 1);
+        });
+      };
+      let server = createServer(
+        null,
+        false,
+        null,
+        undefined,
+        verifyUser
+      ).listen(8888);
+      request(server).get('/verify').end((err, res) => {
+        assert.strictEqual(currentUser, 'asyncUser');
+        assert.strictEqual(200, res.statusCode);
+        server.close(() => done());
+      });
+    });
+  });
 });
 
 function createServer(
   errorRedirectUrl = null,
   respondUserVerificationAsForbidden = false,
   scopes = null,
-  authorizationError
+  authorizationError,
+  verifyUser
 ) {
   return http.createServer(function(req, res) {
     switch (req.url) {
@@ -380,6 +419,18 @@ function createServer(
         };
         let authMiddleware = wedeployMiddleware.auth(config);
         authMiddleware(req, res, () => {
+          res.end();
+        });
+        break;
+      }
+      case '/verify': {
+        let config = {
+          url: 'http://localhost:8888',
+          verifyUser: verifyUser,
+        };
+        let authMiddleware = wedeployMiddleware.auth(config);
+        authMiddleware(req, res, () => {
+          currentUser = res.locals.auth.currentUser;
           res.end();
         });
         break;

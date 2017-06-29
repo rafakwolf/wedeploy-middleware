@@ -114,6 +114,18 @@ function prepareConfig(config) {
   }
 }
 
+/**
+ * Auth middleware
+ * @param {Object} config
+ * @param {Object} config.authorizationError
+ * @param {String} config.redirect
+ * @param {String[]} config.scopes
+ * @param {Boolean} config.unauthorizedOnly
+ * @param {String} config.url
+ * @param {Function} config.verifyUser(req, res) - An alternative way
+    to retrieve the auth user. Can be async.
+ * @return {Auth} - stores auth user in res.locals.auth.currentUser
+ */
 module.exports = function(config) {
   prepareConfig(config);
 
@@ -151,15 +163,21 @@ module.exports = function(config) {
         return;
       }
     }
-
-    if (!tokenOrEmail) {
+    if (!tokenOrEmail && !config.verifyUser) {
       handleAuthorizationError(res, next, config);
       return;
     }
 
-    let auth = WeDeploy.auth(config.url);
-    auth
-      .verifyUser(tokenOrEmail, password)
+    const auth = WeDeploy.auth(config.url);
+    let verifyUserPromise;
+
+    if (config.verifyUser) {
+      verifyUserPromise = Promise.resolve(config.verifyUser(req, res));
+    } else {
+      verifyUserPromise = auth.verifyUser(tokenOrEmail, password);
+    }
+
+    verifyUserPromise
       .then(user => {
         // If route requires unauthorized only validation
         // and token or email is valid, it should redirect
