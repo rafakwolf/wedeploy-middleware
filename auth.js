@@ -173,8 +173,13 @@ module.exports = function(config) {
 
     if (config.verifyUser) {
       verifyUserPromise = Promise.resolve(config.verifyUser(req, res));
+    } else if (tokenOrEmail && password) {
+      verifyUserPromise = auth.signInWithEmailAndPassword(
+        tokenOrEmail,
+        password
+      );
     } else {
-      verifyUserPromise = auth.verifyUser(tokenOrEmail, password);
+      verifyUserPromise = auth.verifyUser(tokenOrEmail);
     }
 
     verifyUserPromise

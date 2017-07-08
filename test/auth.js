@@ -134,11 +134,11 @@ describe('wedeploy-middleware', () => {
         .get('/')
         .set(
           'Authorization',
-          `Basic ${Buffer.from('user:pass').toString('base64')}`
+          `Basic ${Buffer.from('user@domain.com:pass').toString('base64')}`
         )
         .end((err, res) => {
           assert.strictEqual(200, res.statusCode);
-          assert.strictEqual('user', currentUser.email);
+          assert.strictEqual('user@domain.com', currentUser.email);
           server.close(() => done());
         });
     });
@@ -406,8 +406,23 @@ function createServer(
           res.statusCode = 200;
           res.setHeader('Content-Type', 'application/json');
           res.end(
-            JSON.stringify({token: 'token', supportedScopes: ['validScope']})
+            JSON.stringify({
+              token: 'token',
+              supportedScopes: ['validScope'],
+              email: 'user@domain.com',
+            })
           );
+        }
+        break;
+      }
+      case '/oauth/token?grant_type=password&username=user%40domain.com&password=pass': {
+        if (respondUserVerificationAsForbidden) {
+          res.statusCode = 403;
+          res.end();
+        } else {
+          res.statusCode = 200;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({access_token: 'token'}));
         }
         break;
       }
