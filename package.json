@@ -1,7 +1,7 @@
 {
   "name": "wedeploy-middleware",
   "description": "WeDeploy middleware for Node.js",
-  "version": "1.7.0",
+  "version": "2.0.0",
   "author": "Eduardo Lundgren <eduardo.lundgren@liferay.com>",
   "license": "MIT",
   "repository": "wedeploy/wedeploy-middleware",
