@@ -1,5 +1,18 @@
 const url = require('url');
 const WeDeploy = require('wedeploy');
+const util = require('util');
+const ns = 'wedeploy-auth-middleware-redis';
+
+/**
+ * Turn async function into regular function
+ * @param  {Function} fn
+ * @return {Function}
+ */
+function awaitFunction(fn) {
+  return (req, res, next) => {
+    Promise.resolve(fn(req, res, next)).catch(next);
+  };
+}
 
 /**
  * @param {*} value
@@ -115,6 +128,44 @@ function prepareConfig(config) {
 }
 
 /**
+ * Get User from Redis Client
+ * @param  {!Response} res
+ * @param  {!Auth} auth
+ * @param  {!string} tokenOrEmail
+ * @param  {!Object} config
+ * @return {Auth}
+ */
+async function retrieveUserFromRedis(res, auth, tokenOrEmail, config) {
+  if (config.redisClient) {
+    const getFromRedis = util
+      .promisify(config.redisClient.get)
+      .bind(config.redisClient);
+    const cachedUserData = await getFromRedis(`${ns}:${tokenOrEmail}`);
+    if (cachedUserData) {
+      const data = JSON.parse(cachedUserData);
+      const user = auth.createAuthFromData(data);
+      auth.currentUser = user;
+      res.locals = res.locals || {};
+      res.locals.auth = auth;
+      return user;
+    }
+  }
+}
+
+/**
+ * Save user in Redis Client
+ * @param  {!Auth} user         [description]
+ * @param  {!String} tokenOrEmail [description]
+ * @param  {!Object} config       [description]
+ */
+function saveUserInRedis(user, tokenOrEmail, config) {
+  if (config.redisClient) {
+    const key = `${ns}:${tokenOrEmail}`;
+    config.redisClient.set(key, JSON.stringify(user.data_), 'EX', 10);
+  }
+}
+
+/**
  * Auth middleware
  * @param {Object} config
  * @param {Object} config.authorizationError
@@ -124,6 +175,7 @@ function prepareConfig(config) {
  * @param {String} config.url
  * @param {Function} config.verifyUser(req, res) - An alternative way
     to retrieve the auth user. Can be async.
+ * @param {RedisClient} config.redisClient
  * @return {Auth} - stores auth user in res.locals.auth.currentUser
  */
 module.exports = function(config) {
@@ -140,7 +192,7 @@ module.exports = function(config) {
     'WeDeploy authentication service url must ' + 'be provided.'
   );
 
-  return function(req, res, next) {
+  return awaitFunction(async function(req, res, next) {
     let tokenOrEmail =
       extractTokenFromCookie(req) || extractTokenFromParameter(req);
 
@@ -169,6 +221,21 @@ module.exports = function(config) {
     }
 
     const auth = WeDeploy.auth(config.url);
+
+    const user = await retrieveUserFromRedis(res, auth, tokenOrEmail, config);
+    if (user) {
+      if (config.unauthorizedOnly) {
+          handleAuthorizationError(res, next, config);
+          next();
+          return;
+        }
+      if (config.scopes) {
+        assertUserSupportedScopes(user, config.scopes);
+      }
+      next();
+      return;
+    }
+
     let verifyUserPromise;
 
     if (config.verifyUser) {
@@ -192,13 +259,13 @@ module.exports = function(config) {
           next();
           return;
         }
-
-        auth.currentUser = user;
-        res.locals = res.locals || {};
-        res.locals.auth = auth;
         if (config.scopes) {
           assertUserSupportedScopes(user, config.scopes);
         }
+        auth.currentUser = user;
+        res.locals = res.locals || {};
+        res.locals.auth = auth;
+        saveUserInRedis(user, tokenOrEmail, config);
         next();
       })
       .catch(reason => {
@@ -212,5 +279,5 @@ module.exports = function(config) {
         }
         handleAuthorizationError(res, next, config);
       });
-  };
+  });
 };
