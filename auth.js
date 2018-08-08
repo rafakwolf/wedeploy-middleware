@@ -3,6 +3,7 @@ const WeDeploy = require('wedeploy');
 const util = require('util');
 const ns = 'wedeploy-auth-middleware-redis';
 
+module.exports = {};
 /**
  * Turn async function into regular function
  * @param  {Function} fn
@@ -166,6 +167,18 @@ function saveUserInRedis(user, tokenOrEmail, config) {
 }
 
 /**
+ * Delete user in Redis Client
+ * @param  {!String} tokenOrEmail
+ * @param  {!Object} config
+ */
+module.exports.deleteUserInRedis = function(tokenOrEmail, config) {
+  if (config.redisClient) {
+    const key = `${ns}:${tokenOrEmail}`;
+    config.redisClient.del(key);
+  }
+};
+
+/**
  * Auth middleware
  * @param {Object} config
  * @param {Object} config.authorizationError
@@ -178,7 +191,7 @@ function saveUserInRedis(user, tokenOrEmail, config) {
  * @param {RedisClient} config.redisClient
  * @return {Auth} - stores auth user in res.locals.auth.currentUser
  */
-module.exports = function(config) {
+module.exports.auth = function(config) {
   prepareConfig(config);
 
   assertDefAndNotNull(

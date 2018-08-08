@@ -34,6 +34,12 @@ describe('wedeploy-middleware', () => {
     });
   });
 
+  describe('.deleteUserInRedis(key)', function() {
+    it('should export deleteUserInRedis function', function() {
+      assert.strictEqual(typeof wedeployMiddleware.deleteUserInRedis, 'function');
+    });
+  });
+
   describe('cookies', function() {
     it('should respond as authorized if token present in cookies', function(
       done
@@ -419,6 +425,9 @@ describe('wedeploy-middleware', () => {
       exampleClient.set = (key, value) => {
         setKey = key;
       };
+      exampleClient.del = (key) => {
+        setKey = undefined;
+      };
     });
 
     it('should get user from client cache with correct token', done => {
@@ -481,6 +490,30 @@ describe('wedeploy-middleware', () => {
             'wedeploy-auth-middleware-redis:uncachedToken2'
           );
           assert.strictEqual(200, res.statusCode);
+          server.close(() => done());
+        });
+    });
+
+    it('should delete user in cache with deleteUserInRedis', done => {
+      let server = createServer(
+        null,
+        false,
+        null,
+        undefined,
+        undefined,
+        exampleClient
+      ).listen(8999);
+      request(server)
+        .get('/redis')
+        .set('Cookie', 'access_token=uncachedToken2')
+        .end((err, res) => {
+          assert.strictEqual(
+            setKey,
+            'wedeploy-auth-middleware-redis:uncachedToken2'
+          );
+          assert.strictEqual(200, res.statusCode);
+          wedeployMiddleware.deleteUserInRedis(currentUser.token, {redisClient: exampleClient})
+          assert.strictEqual(setKey, undefined);
           server.close(() => done());
         });
     });

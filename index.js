@@ -1,3 +1,6 @@
+const wedeployMiddleware = require('./auth');
+
 module.exports = {
-  auth: require('./auth'),
+  auth: wedeployMiddleware.auth,
+  deleteUserInRedis: wedeployMiddleware.deleteUserInRedis,
 };
