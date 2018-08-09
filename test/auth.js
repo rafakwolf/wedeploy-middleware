@@ -1,7 +1,9 @@
 const assert = require('assert');
-const http = require('http');
+const express = require('express');
 const request = require('supertest');
 const wedeployMiddleware = require('../');
+const bodyParser = require('body-parser');
+const multer = require('multer');
 
 let currentUser;
 
@@ -36,14 +38,15 @@ describe('wedeploy-middleware', () => {
 
   describe('.deleteUserInRedis(key)', function() {
     it('should export deleteUserInRedis function', function() {
-      assert.strictEqual(typeof wedeployMiddleware.deleteUserInRedis, 'function');
+      assert.strictEqual(
+        typeof wedeployMiddleware.deleteUserInRedis,
+        'function'
+      );
     });
   });
 
   describe('cookies', function() {
-    it('should respond as authorized if token present in cookies', function(
-      done
-    ) {
+    it('should respond as authorized if token present in cookies', function(done) {
       let server = createServer().listen(8999);
       request(server)
         .get('/')
@@ -55,9 +58,7 @@ describe('wedeploy-middleware', () => {
         });
     });
 
-    it('should respond as authorized if token present in cookies with multiple values', function(
-      done
-    ) {
+    it('should respond as authorized if token present in cookies with multiple values', function(done) {
       let server = createServer().listen(8999);
       request(server)
         .get('/')
@@ -68,9 +69,7 @@ describe('wedeploy-middleware', () => {
         });
     });
 
-    it('should respond as authorized if token present in cookies has special characters', function(
-      done
-    ) {
+    it('should respond as authorized if token present in cookies has special characters', function(done) {
       let server = createServer().listen(8999);
       request(server)
         .get('/')
@@ -82,9 +81,7 @@ describe('wedeploy-middleware', () => {
         });
     });
 
-    it('should respond as unauthorized if token not present in cookies', function(
-      done
-    ) {
+    it('should respond as unauthorized if token not present in cookies', function(done) {
       let server = createServer().listen(8999);
       request(server)
         .get('/')
@@ -95,9 +92,7 @@ describe('wedeploy-middleware', () => {
         });
     });
 
-    it('should respond as authorized if token is invalid but route requires unauthorized only', function(
-      done
-    ) {
+    it('should respond as authorized if token is invalid but route requires unauthorized only', function(done) {
       let server = createServer(null, true).listen(8999);
       request(server)
         .get('/guest')
@@ -110,9 +105,7 @@ describe('wedeploy-middleware', () => {
   });
 
   describe('querystring', function() {
-    it('should respond as authorized if token present in querystring', function(
-      done
-    ) {
+    it('should respond as authorized if token present in querystring', function(done) {
       let server = createServer().listen(8999);
       request(server)
         .get('/?access_token=token')
@@ -124,9 +117,7 @@ describe('wedeploy-middleware', () => {
   });
 
   describe('headers', function() {
-    it('should respond as authorized if token present in headers (Bearer)', function(
-      done
-    ) {
+    it('should respond as authorized if token present in headers (Bearer)', function(done) {
       let server = createServer().listen(8999);
       request(server)
         .get('/')
@@ -137,9 +128,7 @@ describe('wedeploy-middleware', () => {
         });
     });
 
-    it('should respond as authorized if credentials are present in headers (Basic)', function(
-      done
-    ) {
+    it('should respond as authorized if credentials are present in headers (Basic)', function(done) {
       let server = createServer().listen(8999);
       request(server)
         .get('/')
@@ -148,15 +137,13 @@ describe('wedeploy-middleware', () => {
           `Basic ${Buffer.from('user@domain.com:pass').toString('base64')}`
         )
         .end((err, res) => {
-          assert.strictEqual(200, res.statusCode);
+          assert.strictEqual(res.statusCode, 200);
           assert.strictEqual('user@domain.com', currentUser.email);
           server.close(() => done());
         });
     });
 
-    it('should convert to lowercase value extracted from authorization header if it\'s an email (Basic)', function(
-      done
-    ) {
+    it('should convert to lowercase value extracted from authorization header if it\'s an email (Basic)', function(done) {
       let server = createServer().listen(8999);
       request(server)
         .get('/')
@@ -170,9 +157,7 @@ describe('wedeploy-middleware', () => {
         });
     });
 
-    it('should not convert to lowercase value extracted from authorization header if it\'s a token (Basic)', function(
-      done
-    ) {
+    it('should not convert to lowercase value extracted from authorization header if it\'s a token (Basic)', function(done) {
       let server = createServer().listen(8999);
       request(server)
         .get('/')
@@ -186,9 +171,7 @@ describe('wedeploy-middleware', () => {
         });
     });
 
-    it('should respond as authorized if unknown authorization scheme', function(
-      done
-    ) {
+    it('should respond as authorized if unknown authorization scheme', function(done) {
       let server = createServer().listen(8999);
       request(server)
         .get('/')
@@ -212,9 +195,7 @@ describe('wedeploy-middleware', () => {
   });
 
   describe('token presence', function() {
-    it('should respond as unauthorized if token not present in headers, cookies or querystring', function(
-      done
-    ) {
+    it('should respond as unauthorized if token not present in headers, cookies or querystring', function(done) {
       let server = createServer().listen(8999);
       request(server)
         .get('/')
@@ -224,9 +205,7 @@ describe('wedeploy-middleware', () => {
         });
     });
 
-    it('should redirect if token not present in headers, cookies or querystring', function(
-      done
-    ) {
+    it('should redirect if token not present in headers, cookies or querystring', function(done) {
       let server = createServer('/login').listen(8999);
       request(server)
         .get('/')
@@ -328,9 +307,7 @@ describe('wedeploy-middleware', () => {
         });
     });
 
-    it('should proceed to the next middleware and not throw an error if authorizationError is false', function(
-      done
-    ) {
+    it('should proceed to the next middleware and not throw an error if authorizationError is false', function(done) {
       let server = createServer(null, false, null, false).listen(8999);
       request(server)
         .get('/')
@@ -354,9 +331,7 @@ describe('wedeploy-middleware', () => {
           server.close(() => done());
         });
     });
-    it('should not redirect if request does not have authenticated user', function(
-      done
-    ) {
+    it('should not redirect if request does not have authenticated user', function(done) {
       let server = createServer('/authorized-route', false).listen(8999);
       request(server)
         .get('/guest')
@@ -425,7 +400,7 @@ describe('wedeploy-middleware', () => {
       exampleClient.set = (key, value) => {
         setKey = key;
       };
-      exampleClient.del = (key) => {
+      exampleClient.del = key => {
         setKey = undefined;
       };
     });
@@ -512,7 +487,9 @@ describe('wedeploy-middleware', () => {
             'wedeploy-auth-middleware-redis:uncachedToken2'
           );
           assert.strictEqual(200, res.statusCode);
-          wedeployMiddleware.deleteUserInRedis(currentUser.token, {redisClient: exampleClient})
+          wedeployMiddleware.deleteUserInRedis(currentUser.token, {
+            redisClient: exampleClient,
+          });
           assert.strictEqual(setKey, undefined);
           server.close(() => done());
         });
@@ -528,87 +505,94 @@ function createServer(
   verifyUser,
   redisClient
 ) {
-  return http.createServer(function(req, res) {
-    switch (req.url) {
-      case '/user': {
-        if (respondUserVerificationAsForbidden) {
-          res.statusCode = 403;
-          res.end();
-        } else {
-          res.statusCode = 200;
-          res.setHeader('Content-Type', 'application/json');
-          res.end(
-            JSON.stringify({
-              token: 'token',
-              supportedScopes: ['validScope'],
-              email: 'user@domain.com',
-            })
-          );
-        }
-        break;
-      }
-      case '/oauth/token?grant_type=password&username=user%40domain.com&password=pass': {
-        if (respondUserVerificationAsForbidden) {
-          res.statusCode = 403;
-          res.end();
-        } else {
-          res.statusCode = 200;
-          res.setHeader('Content-Type', 'application/json');
-          res.end(JSON.stringify({access_token: 'token'}));
-        }
-        break;
-      }
-      case '/guest': {
-        let config = {
-          url: 'http://localhost:8999',
-          redirect: errorRedirectUrl,
-          unauthorizedOnly: true,
-        };
-        let authMiddleware = wedeployMiddleware.auth(config);
-        authMiddleware(req, res, () => {
-          res.end();
-        });
-        break;
-      }
-      case '/verify': {
-        let config = {
-          url: 'http://localhost:8999',
-          verifyUser: verifyUser,
-        };
-        let authMiddleware = wedeployMiddleware.auth(config);
-        authMiddleware(req, res, () => {
-          currentUser = res.locals.auth.currentUser;
-          res.end();
-        });
-        break;
-      }
-      case '/redis': {
-        let config = {
-          url: 'http://localhost:8999',
-          redisClient,
-        };
-        let authMiddleware = wedeployMiddleware.auth(config);
-        authMiddleware(req, res, () => {
-          currentUser = res.locals.auth.currentUser;
-          res.end();
-        });
-        break;
-      }
-      default: {
-        let config = {
-          url: 'http://localhost:8999',
-          redirect: errorRedirectUrl,
-          scopes: scopes,
-        };
-        if (authorizationError !== undefined) {
-          config.authorizationError = authorizationError;
-        }
-        let authMiddleware = wedeployMiddleware.auth(config);
-        authMiddleware(req, res, err => {
-          currentUser = res.locals.auth.currentUser;
-          res.end();
-        });
-      }
+  const upload = multer();
+  const app = express();
+  app.use(bodyParser.json());
+  app.use(bodyParser.urlencoded({extended: true}));
+
+  app.get('/user', (req, res) => {
+    if (respondUserVerificationAsForbidden) {
+      res.statusCode = 403;
+      res.end();
+    } else {
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(
+        JSON.stringify({
+          token: 'token',
+          supportedScopes: ['validScope'],
+          email: 'user@domain.com',
+        })
+      );
     }
   });
+
+  app.post('/oauth/token', upload.array(), (req, res) => {
+    const {username, password} = req.body;
+    if (respondUserVerificationAsForbidden) {
+      res.statusCode = 403;
+      res.end();
+    } else if (username === 'user@domain.com' && password === 'pass') {
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({access_token: 'token'}));
+    } else {
+      res.statusCode = 404;
+      res.end();
+    }
+  });
+
+  app.get('/guest', (req, res) => {
+    let config = {
+      url: 'http://localhost:8999',
+      redirect: errorRedirectUrl,
+      unauthorizedOnly: true,
+    };
+    let authMiddleware = wedeployMiddleware.auth(config);
+    authMiddleware(req, res, () => {
+      res.end();
+    });
+  });
+
+  app.get('/verify', (req, res) => {
+    let config = {
+      url: 'http://localhost:8999',
+      verifyUser: verifyUser,
+    };
+    let authMiddleware = wedeployMiddleware.auth(config);
+    authMiddleware(req, res, () => {
+      currentUser = res.locals.auth.currentUser;
+      res.end();
+    });
+  });
+
+  app.get('/redis', (req, res) => {
+    let config = {
+      url: 'http://localhost:8999',
+      redisClient,
+    };
+    let authMiddleware = wedeployMiddleware.auth(config);
+    authMiddleware(req, res, () => {
+      currentUser = res.locals.auth.currentUser;
+      res.end();
+    });
+  });
+
+  app.get('/*', (req, res) => {
+    let config = {
+      url: 'http://localhost:8999',
+      redirect: errorRedirectUrl,
+      scopes: scopes,
+    };
+    if (authorizationError !== undefined) {
+      config.authorizationError = authorizationError;
+    }
+    let authMiddleware = wedeployMiddleware.auth(config);
+    authMiddleware(req, res, err => {
+      currentUser = res.locals.auth.currentUser;
+      res.end();
+    });
+  });
+
+  return app;
 }

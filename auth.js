@@ -155,9 +155,9 @@ async function retrieveUserFromRedis(res, auth, tokenOrEmail, config) {
 
 /**
  * Save user in Redis Client
- * @param  {!Auth} user         [description]
- * @param  {!String} tokenOrEmail [description]
- * @param  {!Object} config       [description]
+ * @param  {!Auth} user
+ * @param  {!String} tokenOrEmail
+ * @param  {!Object} config
  */
 function saveUserInRedis(user, tokenOrEmail, config) {
   if (config.redisClient) {
@@ -238,10 +238,10 @@ module.exports.auth = function(config) {
     const user = await retrieveUserFromRedis(res, auth, tokenOrEmail, config);
     if (user) {
       if (config.unauthorizedOnly) {
-          handleAuthorizationError(res, next, config);
-          next();
-          return;
-        }
+        handleAuthorizationError(res, next, config);
+        next();
+        return;
+      }
       if (config.scopes) {
         assertUserSupportedScopes(user, config.scopes);
       }
