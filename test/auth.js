@@ -282,6 +282,42 @@ describe('wedeploy-middleware', () => {
           server.close(() => done());
         });
     });
+
+    it('should authorize if scope has one of the specified scopes and "scopesOr" param set to TRUE', function(done) {
+      let server = createServer(
+        null,
+        false,
+        ['validScope','scope1', 'scope2'],
+        undefined,
+        undefined,
+        undefined,
+        true
+      ).listen(8999);
+
+      request(server)
+        .get('/')
+        .set('Authorization', 'Bearer skipRedirectBecauseTokenWasMissing')
+        .end((err, res) => {
+          assert.strictEqual(200, res.statusCode);
+          server.close(() => done());
+        });
+    });
+
+    it('should NOT authorize if scope has one of the specified scopes and "scopesOr" param set to FALSE', function(done) {
+      let server = createServer(
+        null,
+        false,
+        ['validScope','scope1', 'scope2']
+      ).listen(8999);
+
+      request(server)
+        .get('/')
+        .set('Authorization', 'Bearer skipRedirectBecauseTokenWasMissing')
+        .end((err, res) => {
+          assert.strictEqual(401, res.statusCode);
+          server.close(() => done());
+        });
+    });
   });
 
   describe('config.authorizationError', function() {
@@ -503,7 +539,8 @@ function createServer(
   scopes = null,
   authorizationError,
   verifyUser,
-  redisClient
+  redisClient,
+  scopesOr = false
 ) {
   const upload = multer();
   const app = express();
@@ -583,6 +620,7 @@ function createServer(
       url: 'http://localhost:8999',
       redirect: errorRedirectUrl,
       scopes: scopes,
+      scopesOr,
     };
     if (authorizationError !== undefined) {
       config.authorizationError = authorizationError;

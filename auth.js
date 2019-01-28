@@ -27,10 +27,19 @@ function assertDefAndNotNull(value, message) {
 
 /**
  * @param {Auth} user
- * @param {Array.<string>} scopes
+ * @param {Object} config
  */
-function assertUserSupportedScopes(user, scopes) {
-  if (!user.hasSupportedScopes(scopes)) {
+function assertUserSupportedScopes(user, config) {
+  let foundScopes = true;
+  const {scopes, scopesOr} = config;
+  if (scopesOr) {
+    if (user.supportedScopes) {
+      foundScopes = scopes.some(scope => user.supportedScopes.includes(scope));
+    }
+  } else {
+    foundScopes = user.hasSupportedScopes(scopes);
+  }
+  if (!foundScopes) {
     throw new Error('User does not have scopes: ' + scopes);
   }
 }
@@ -243,7 +252,7 @@ module.exports.auth = function(config) {
         return;
       }
       if (config.scopes) {
-        assertUserSupportedScopes(user, config.scopes);
+        assertUserSupportedScopes(user, config);
       }
       next();
       return;
@@ -273,7 +282,7 @@ module.exports.auth = function(config) {
           return;
         }
         if (config.scopes) {
-          assertUserSupportedScopes(user, config.scopes);
+          assertUserSupportedScopes(user, config);
         }
         auth.currentUser = user;
         res.locals = res.locals || {};
